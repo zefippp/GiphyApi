@@ -1,5 +1,7 @@
 package com.infinity.giphy.model.search
 
+import java.io.Serializable
+
 data class FixedHeight(
     val height: String,
     val mp4: String,
@@ -9,4 +11,4 @@ data class FixedHeight(
     val webp: String,
     val webp_size: String,
     val width: String
-)
+) : Serializable

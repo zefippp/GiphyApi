@@ -1,5 +1,7 @@
 package com.infinity.giphy.model.search
 
+import java.io.Serializable
+
 data class Original(
     val frames: String,
     val hash: String,
@@ -11,4 +13,4 @@ data class Original(
     val webp: String,
     val webp_size: String,
     val width: String
-)
+) : Serializable

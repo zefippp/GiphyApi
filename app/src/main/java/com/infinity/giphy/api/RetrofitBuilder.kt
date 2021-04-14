@@ -1,18 +1,19 @@
 package com.infinity.giphy.api
 
+import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class NetworkService private constructor() {
+class RetrofitBuilder private constructor() {
     private val mRetrofit: Retrofit
 
     companion object {
-        private var mInstance: NetworkService? = null
+        private var mInstance: RetrofitBuilder? = null
         private const val BASE_URL = "https://api.giphy.com"
-        val instance: NetworkService?
+        val instance: RetrofitBuilder?
             get() {
                 if (mInstance == null) {
-                    mInstance = NetworkService()
+                    mInstance = RetrofitBuilder()
                 }
                 return mInstance
             }
@@ -22,6 +23,7 @@ class NetworkService private constructor() {
         mRetrofit = Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
+            .addCallAdapterFactory(CoroutineCallAdapterFactory())
             .build()
     }
 

@@ -8,20 +8,18 @@ import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import com.infinity.giphy.model.search.GifItem
-import com.infinity.giphy.adapter.GifAdapter
 import com.infinity.giphy.R
-import com.infinity.giphy.api.NetworkService
-import com.infinity.giphy.model.search.SearchGif
+import com.infinity.giphy.adapter.GifAdapter
+import com.infinity.giphy.api.RetrofitBuilder
 import com.infinity.giphy.presenter.SearchGifPresenter
-import com.infinity.giphy.presenter.ViewingGifPresenter
 import kotlinx.android.synthetic.main.activity_main.*
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.flow.*
 import java.util.*
 
-class MainActivity : AppCompatActivity(), GifView {
+class MainActivity : AppCompatActivity(), GifView, CoroutineScope by MainScope() {
+
     private var presenter: SearchGifPresenter? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,39 +27,25 @@ class MainActivity : AppCompatActivity(), GifView {
         presenter = SearchGifPresenter(this@MainActivity)
     }
 
-    override fun opUpdateList() {
-        val items: MutableList<GifItem> = ArrayList()
+    override fun onUpdateList() {
+        GlobalScope.launch(Dispatchers.Main) {
+            val getItems = async(IO) {
+                RetrofitBuilder.instance
+                    ?.getAPI()
+                    ?.searchGif(etSearchGif.text.toString())?.body()
+            }
+            try {
+                val staggeredGridLayoutManager =
+                    StaggeredGridLayoutManager(2, LinearLayoutManager.VERTICAL)
+                rvGif.layoutManager =
+                    staggeredGridLayoutManager
 
-        NetworkService.instance
-            ?.getAPI()
-            ?.searchGif(etSearchGif.text.toString())
-            ?.enqueue(object : Callback<SearchGif?> {
-                override fun onResponse(
-                    call: Call<SearchGif?>,
-                    response: Response<SearchGif?>
-                ) {
-                    val post: SearchGif = response.body()!!
-                    items.clear()
-                    post.data.forEach {
-                        val item = GifItem(
-                            it.images.downsized_medium
-                        )
-                        items.add(item)
-                    }
-
-                    val staggeredGridLayoutManager =
-                        StaggeredGridLayoutManager(2, LinearLayoutManager.VERTICAL)
-                    rvGif.layoutManager =
-                        staggeredGridLayoutManager
-
-                    val gifAdapter = GifAdapter(items, this@MainActivity)
-                    rvGif.adapter = gifAdapter
-                }
-
-                override fun onFailure(call: Call<SearchGif?>, t: Throwable) {
-                    t.printStackTrace()
-                }
-            })
+                val gifAdapter = GifAdapter(getItems.await()?.data, this@MainActivity)
+                rvGif.adapter = gifAdapter
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
     override fun initView() {

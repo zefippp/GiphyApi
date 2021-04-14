@@ -1,5 +1,7 @@
 package com.infinity.giphy.model.search
 
+import java.io.Serializable
+
 data class User(
     val avatar_url: String,
     val banner_image: String,
@@ -11,4 +13,4 @@ data class User(
     val profile_url: String,
     val username: String,
     val website_url: String
-)
+) : Serializable

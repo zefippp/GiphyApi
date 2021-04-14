@@ -1,7 +1,8 @@
 package com.infinity.giphy.model.search
 
+import java.io.Serializable
+
 data class Data(
-    val analytics: Analytics,
     val analytics_response_payload: String,
     val bitly_gif_url: String,
     val bitly_url: String,
@@ -22,4 +23,4 @@ data class Data(
     val url: String,
     val user: User,
     val username: String
-)
+) : Serializable
